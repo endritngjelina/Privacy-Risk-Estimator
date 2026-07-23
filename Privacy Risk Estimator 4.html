@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Risk Estimator - Enterprise Security Assessment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .assessment-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            animation: fadeInLeft 1s ease-out;
+        }
+
+        .results-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            animation: fadeInRight 1s ease-out;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .category {
+            margin-bottom: 35px;
+            padding: 25px;
+            background: linear-gradient(145deg, #f8f9ff, #e8f0fe);
+            border-radius: 15px;
+            border-left: 4px solid #4285f4;
+            transition: all 0.3s ease;
+        }
+
+        .category:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(66, 133, 244, 0.15);
+        }
+
+        .category h3 {
+            color: #1a73e8;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .category-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            background: #4285f4;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .question:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .option:hover {
+            background: #e8f0fe;
+            border-color: #4285f4;
+        }
+
+        .option.selected {
+            background: #4285f4;
+            color: white;
+            border-color: #1a73e8;
+        }
+
+        .option input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+
+        .risk-meter {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .risk-score {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .risk-level {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .risk-low { background: #d4edda; color: #155724; }
+        .risk-medium { background: #fff3cd; color: #856404; }
+        .risk-high { background: #f8d7da; color: #721c24; }
+        .risk-critical { background: #d1ecf1; color: #0c5460; }
+
+        .progress-ring {
+            margin: 20px auto;
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .progress-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 8;
+        }
+
+        .progress-ring .background {
+            stroke: #e0e0e0;
+        }
+
+        .progress-ring .progress {
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease-in-out;
+        }
+
+        .recommendations {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .recommendations h4 {
+            color: #1a73e8;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .recommendation {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #4285f4;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .recommendation:hover {
+            transform: translateX(5px);
+        }
+
+        .recommendation-priority {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .priority-high { background: #fee; color: #c53030; }
+        .priority-medium { background: #fffbeb; color: #d69e2e; }
+        .priority-low { background: #f0fff4; color: #38a169; }
+
+        .category-breakdown {
+            margin-top: 25px;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .category-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-score {
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 15px;
+            color: white;
+        }
+
+        .export-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(145deg, #f0f7ff, #e6f3ff);
+            border-radius: 12px;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #4285f4;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(66, 133, 244, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .progress-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: #4285f4;
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .floating-help {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #4285f4;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(66, 133, 244, 0.3);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .floating-help:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(66, 133, 244, 0.4);
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .results-panel {
+                position: static;
+            }
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-indicator" id="progressBar"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Privacy Risk Estimator</h1>
+            <p>Enterprise-grade privacy assessment tool for comprehensive security evaluation</p>
+            <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">
+                Powered by Advanced Risk Analytics | Trusted by Fortune 500 Companies
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="assessment-panel">
+                <div id="questionnaire">
+                    <!-- Questions will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="results-panel">
+                <div class="risk-meter">
+                    <div class="risk-score" id="riskScore">0</div>
+                    <div class="risk-level" id="riskLevel">Calculating...</div>
+                    
+                    <div class="progress-ring">
+                        <svg width="120" height="120">
+                            <circle class="background" cx="60" cy="60" r="54" stroke-width="8"/>
+                            <circle class="progress" id="progressCircle" cx="60" cy="60" r="54" 
+                                stroke-width="8" stroke-dasharray="339.292" stroke-dashoffset="339.292"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="category-breakdown">
+                    <h4>Risk Breakdown</h4>
+                    <div id="categoryBreakdown">
+                        <!-- Category scores will be populated -->
+                    </div>
+                </div>
+
+                <div class="recommendations">
+                    <h4>Priority Actions</h4>
+                    <div id="recommendations">
+                        <!-- Recommendations will be populated -->
+                    </div>
+                </div>
+
+                <div class="export-section">
+                    <h4>Generate Report</h4>
+                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+                        Export your privacy assessment for compliance and security teams
+                    </p>
+                    <div class="export-buttons">
+                        <button class="btn btn-primary" onclick="exportReport('pdf')">📄 PDF Report</button>
+                        <button class="btn btn-secondary" onclick="exportReport('json')">📊 JSON Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-help tooltip" data-tooltip="Need help? Click for assistance">
+        ❓
+    </div>
+
+    <script>
+        const assessmentData = {
+            categories: {
+                passwords: {
+                    name: "Password Security",
+                    icon: "🔐",
+                    weight: 0.25,
+                    questions: [
+                        {
+                            id: "password_reuse",
+                            text: "Do you reuse passwords across multiple accounts?",
+                            options: [
+                                { text: "Never - I use unique passwords everywhere", risk: 0, weight: 3 },
+                                { text: "Rarely - Only for unimportant accounts", risk: 2, weight: 3 },
+                                { text: "Sometimes - For similar types of accounts", risk: 6, weight: 3 },
+                                { text: "Often - I reuse 2-3 main passwords", risk: 8, weight: 3 },
+                                { text: "Always - I use the same password everywhere", risk: 10, weight: 3 }
+                            ]
+                        },
+                        {
+                            id: "password_manager",
+                            text: "Do you use a password manager?",
+                            options: [
+                                { text: "Yes, enterprise-grade (1Password, Bitwarden Business)", risk: 0, weight: 2.5 },
+                                { text: "Yes, consumer-grade (LastPass, Dashlane)", risk: 1, weight: 2.5 },
+                                { text: "Yes, browser built-in", risk: 3, weight: 2.5 },
+                                { text: "No, but I write them down securely", risk: 6, weight: 2.5 },
+                                { text: "No, I remember them all", risk: 8, weight: 2.5 }
+                            ]
+                        },
+                        {
+                            id: "two_factor",
+                            text: "How do you handle two-factor authentication?",
+                            options: [
+                                { text: "Hardware keys (YubiKey, Titan) for all accounts", risk: 0, weight: 2 },
+                                { text: "Authenticator apps for most important accounts", risk: 1, weight: 2 },
+                                { text: "SMS codes for some accounts", risk: 4, weight: 2 },
+                                { text: "Email-based 2FA only", risk: 6, weight: 2 },
+                                { text: "I don't use 2FA", risk: 10, weight: 2 }
+                            ]
+                        }
+                    ]
+                },
+                social_media: {
+                    name: "Social Media Privacy",
+                    icon: "📱",
+                    weight: 0.2,
+                    questions: [
+                        {
+                            id: "profile_visibility",
+                            text: "What's your default privacy setting for social media profiles?",
+                            options: [
+                                { text: "Private/Friends only with regular audits", risk: 0, weight: 2.5 },
+                                { text: "Private/Friends only", risk: 2, weight: 2.5 },
+                                { text: "Friends of friends", risk: 5, weight: 2.5 },
+                                { text: "Public with some restrictions", risk: 7, weight: 2.5 },
+                                { text: "Completely public", risk: 9, weight: 2.5 }
+                            ]
+                        },
+                        {
+                            id: "personal_info_sharing",
+                            text: "How much personal information do you share online?",
+                            options: [
+                                { text: "Minimal - No personal details", risk: 0, weight: 3 },
+                                { text: "Basic - Just name and profile picture", risk: 2, weight: 3 },
+                                { text: "Moderate - Include work and general location", risk: 5, weight: 3 },
+                                { text: "Detailed - Birthdate, full location, family info", risk: 8, weight: 3 },
+                                { text: "Everything - Full life details including financial hints", risk: 10, weight: 3 }
+                            ]
+                        },
+                        {
+                            id: "location_services",
+                            text: "How do you manage location sharing?",
+                            options: [
+                                { text: "Disabled for all apps except essential", risk: 0, weight: 2 },
+                                { text: "Only while using specific apps", risk: 2, weight: 2 },
+                                { text: "Enabled for most apps", risk: 6, weight: 2 },
+                                { text: "Always enabled with frequent check-ins", risk: 8, weight: 2 },
+                                { text: "Share live location constantly", risk: 10, weight: 2 }
+                            ]
+                        }
+                    ]
+                },
+                devices: {
+                    name: "Device Security",
+                    icon: "💻",
+                    weight: 0.2,
+                    questions: [
+                        {
+                            id: "device_locking",
+                            text: "How do you secure your devices?",
+                            options: [
+                                { text: "Biometric + strong PIN with auto-lock under 5 min", risk: 0, weight: 2.5 },
+                                { text: "Strong PIN/password with auto-lock", risk: 1, weight: 2.5 },
+                                { text: "Simple PIN with auto-lock", risk: 4, weight: 2.5 },
+                                { text: "Pattern lock or weak PIN", risk: 7, weight: 2.5 },
+                                { text: "No lock screen protection", risk: 10, weight: 2.5 }
+                            ]
+                        },
+                        {
+                            id: "software_updates",
+                            text: "How do you handle software updates?",
+                            options: [
+                                { text: "Automatic updates enabled, install immediately", risk: 0, weight: 2 },
+                                { text: "Install updates within a week of release", risk: 2, weight: 2 },
+                                { text: "Install updates monthly", risk: 5, weight: 2 },
+                                { text: "Install updates only when reminded multiple times", risk: 7, weight: 2 },
+                                { text: "Rarely or never update", risk: 10, weight: 2 }
+                            ]
+                        },
+                        {
+                            id: "public_wifi",
+                            text: "How do you use public Wi-Fi?",
+                            options: [
+                                { text: "Always use VPN, avoid sensitive activities", risk: 0, weight: 2.5 },
+                                { text: "Use VPN for most activities", risk: 1, weight: 2.5 },
+                                { text: "Only for basic browsing, avoid sensitive sites", risk: 4, weight: 2.5 },
+                                { text: "Use normally but avoid banking", risk: 7, weight: 2.5 },
+                                { text: "Use for everything including banking", risk: 10, weight: 2.5 }
+                            ]
+                        }
+                    ]
+                },
+                data_sharing: {
+                    name: "Data Sharing Practices",
+                    icon: "📊",
+                    weight: 0.15,
+                    questions: [
+                        {
+                            id: "app_permissions",
+                            text: "How do you manage app permissions?",
+                            options: [
+                                { text: "Carefully review and limit all permissions", risk: 0, weight: 2.5 },
+                                { text: "Review important permissions only", risk: 3, weight: 2.5 },
+                                { text: "Usually accept default permissions", risk: 6, weight: 2.5 },
+                                { text: "Always accept all permissions", risk: 9, weight: 2.5 },
+                                { text: "Never check permissions", risk: 10, weight: 2.5 }
+                            ]
+                        },
+                        {
+                            id: "privacy_policies",
+                            text: "Do you read privacy policies before using services?",
+                            options: [
+                                { text: "Always read and understand key points", risk: 0, weight: 2 },
+                                { text: "Skim through important sections", risk: 3, weight: 2 },
+                                { text: "Rarely read them", risk: 7, weight: 2 },
+                                { text: "Never read them", risk: 9, weight: 2 },
+                                { text: "What are privacy policies?", risk: 10, weight: 2 }
+                            ]
+                        },
+                        {
+                            id: "data_portability",
+                            text: "Do you regularly backup and audit your data?",
+                            options: [
+                                { text: "Regular automated backups + quarterly audits", risk: 0, weight: 2 },
+                                { text: "Regular backups, occasional audits", risk: 2, weight: 2 },
+                                { text: "Sporadic backups", risk: 5, weight: 2 },
+                                { text: "Rarely backup", risk: 8, weight: 2 },
+                                { text: "Never backup or audit", risk: 10, weight: 2 }
+                            ]
+                        }
+                    ]
+                },
+                communication: {
+                    name: "Communication Security",
+                    icon: "💬",
+                    weight: 0.2,
+                    questions: [
+                        {
+                            id: "email_security",
+                            text: "How do you handle email security?",
+                            options: [
+                                { text: "End-to-end encrypted email with PGP/S-MIME", risk: 0, weight: 2.5 },
+                                { text: "Secure email providers (ProtonMail, Tutanota)", risk: 1, weight: 2.5 },
+                                { text: "Standard email with strong passwords", risk: 4, weight: 2.5 },
+                                { text: "Standard email with basic security", risk: 7, weight: 2.5 },
+                                { text: "Free email with weak passwords", risk: 9, weight: 2.5 }
+                            ]
+                        },
+                        {
+                            id: "messaging_apps",
+                            text: "What messaging apps do you primarily use?",
+                            options: [
+                                { text: "Signal, Wire, or other E2E encrypted apps", risk: 0, weight: 2.5 },
+                                { text: "WhatsApp, iMessage (encrypted but metadata collected)", risk: 2, weight: 2.5 },
+                                { text: "Telegram (cloud chats)", risk: 5, weight: 2.5 },
+                                { text: "Facebook Messenger, Instagram DM", risk: 7, weight: 2.5 },
+                                { text: "SMS/Text messages", risk: 8, weight: 2.5 }
+                            ]
+                        },
+                        {
+                            id: "phishing_awareness",
+                            text: "How confident are you in identifying phishing attempts?",
+                            options: [
+                                { text: "Expert level - I can spot sophisticated attacks", risk: 0, weight: 2.5 },
+                                { text: "Very confident - I catch most attempts", risk: 1, weight: 2.5 },
+                                { text: "Somewhat confident - I catch obvious ones", risk: 4, weight: 2.5 },
+                                { text: "Not very confident - I sometimes fall for them", risk: 8, weight: 2.5 },
+                                { text: "I don't know what phishing is", risk: 10, weight: 2.5 }
+                            ]
+                        }
+                    ]
+                }
+            }
+        };
+
+        let currentAnswers = {};
+        let totalQuestions = 0;
+        let answeredQuestions = 0;
+
+        // Calculate total questions for progress tracking
+        Object.values(assessmentData.categories).forEach(category => {
+            totalQuestions += category.questions.length;
+        });
+
+        function initializeAssessment() {
+            const questionnaireDiv = document.getElementById('questionnaire');
+            let questionIndex = 0;
+
+            Object.entries(assessmentData.categories).forEach(([categoryId, category]) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                
+                categoryDiv.innerHTML = `
+                    <h3>
+                        <div class="category-icon">${category.icon}</div>
+                        ${category.name}
+                        <span class="tooltip" data-tooltip="This section evaluates your ${category.name.toLowerCase()} practices">ℹ️</span>
+                    </h3>
+                `;
+
+                category.questions.forEach((question, qIndex) => {
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'question';
+                    
+                    const optionsHtml = question.options.map((option, optIndex) => `
+                        <div class="option" onclick="selectOption('${categoryId}', ${qIndex}, ${optIndex})">
+                            <input type="radio" name="${categoryId}_${qIndex}" value="${optIndex}" id="${categoryId}_${qIndex}_${optIndex}">
+                            <label for="${categoryId}_${qIndex}_${optIndex}">${option.text}</label>
+                        </div>
+                    `).join('');
+
+                    questionDiv.innerHTML = `
+                        <div class="question-text">${question.text}</div>
+                        <div class="options" id="options_${categoryId}_${qIndex}">
+                            ${optionsHtml}
+                        </div>
+                    `;
+
+                    categoryDiv.appendChild(questionDiv);
+                });
+
+                questionnaireDiv.appendChild(categoryDiv);
+            });
+
+            updateResults();
+        }
+
+        function selectOption(categoryId, questionIndex, optionIndex) {
+            // Update radio button
+            const radio = document.getElementById(`${categoryId}_${questionIndex}_${optionIndex}`);
+            radio.checked = true;
+
+            // Update visual selection
+            const optionsContainer = document.getElementById(`options_${categoryId}_${questionIndex}`);
+            optionsContainer.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            optionsContainer.querySelectorAll('.option')[optionIndex].classList.add('selected');
+
+            // Store answer
+            if (!currentAnswers[categoryId]) {
+                currentAnswers[categoryId] = {};
+            }
+            
+            const wasNewAnswer = !currentAnswers[categoryId][questionIndex];
+            currentAnswers[categoryId][questionIndex] = optionIndex;
+            
+            if (wasNewAnswer) {
+                answeredQuestions++;
+            }
+
+            updateProgress();
+            updateResults();
+        }
+
+        function updateProgress() {
+            const progress = (answeredQuestions / totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        function calculateRiskScore() {
+            let totalRisk = 0;
+            let totalWeight = 0;
+            const categoryScores = {};
+
+            Object.entries(assessmentData.categories).forEach(([categoryId, category]) => {
+                let categoryRisk = 0;
+                let categoryWeight = 0;
+                let categoryAnswered = 0;
+
+                category.questions.forEach((question, qIndex) => {
+                    if (currentAnswers[categoryId] && currentAnswers[categoryId][qIndex] !== undefined) {
+                        const selectedOption = question.options[currentAnswers[categoryId][qIndex]];
+                        categoryRisk += selectedOption.risk * selectedOption.weight;
+                        categoryWeight += selectedOption.weight;
+                        categoryAnswered++;
+                    }
+                });
+
+                if (categoryAnswered > 0) {
+                    const normalizedCategoryRisk = (categoryRisk / categoryWeight) * category.weight;
+                    categoryScores[categoryId] = {
+                        score: Math.round((categoryRisk / categoryWeight) * 10) / 10,
+                        normalizedScore: normalizedCategoryRisk,
+                        name: category.name,
+                        icon: category.icon
+                    };
+                    totalRisk += normalizedCategoryRisk;
+                    totalWeight += category.weight;
+                }
+            });
+
+            return {
+                overallScore: totalWeight > 0 ? Math.round((totalRisk / totalWeight) * 100) / 10 : 0,
+                categoryScores: categoryScores
+            };
+        }
+
+        function getRiskLevel(score) {
+            if (score <= 2) return { level: 'Low Risk', class: 'risk-low', color: '#28a745' };
+            if (score <= 5) return { level: 'Medium Risk', class: 'risk-medium', color: '#ffc107' };
+            if (score <= 8) return { level: 'High Risk', class: 'risk-high', color: '#dc3545' };
+            return { level: 'Critical Risk', class: 'risk-critical', color: '#17a2b8' };
+        }
+
+        function updateResults() {
+            const riskData = calculateRiskScore();
+            const riskLevel = getRiskLevel(riskData.overallScore);
+
+            // Update main score
+            document.getElementById('riskScore').textContent = riskData.overallScore.toFixed(1);
+            const riskLevelElement = document.getElementById('riskLevel');
+            riskLevelElement.textContent = riskLevel.level;
+            riskLevelElement.className = `risk-level ${riskLevel.class}`;
+
+            // Update progress ring
+            const circle = document.getElementById('progressCircle');
+            const circumference = 2 * Math.PI * 54;
+            const strokeDashoffset = circumference - (riskData.overallScore / 10) * circumference;
+            circle.style.strokeDashoffset = strokeDashoffset;
+            circle.style.stroke = riskLevel.color;
+
+            // Update category breakdown
+            updateCategoryBreakdown(riskData.categoryScores);
+            
+            // Update recommendations
+            updateRecommendations(riskData);
+        }
+
+        function updateCategoryBreakdown(categoryScores) {
+            const breakdownDiv = document.getElementById('categoryBreakdown');
+            breakdownDiv.innerHTML = '';
+
+            Object.entries(categoryScores).forEach(([categoryId, data]) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category-item';
+                
+                const riskLevel = getRiskLevel(data.score);
+                
+                categoryDiv.innerHTML = `
+                    <span>${data.icon} ${data.name}</span>
+                    <span class="category-score" style="background-color: ${riskLevel.color}">
+                        ${data.score}/10
+                    </span>
+                `;
+                
+                breakdownDiv.appendChild(categoryDiv);
+            });
+        }
+
+        function generateRecommendations(riskData) {
+            const recommendations = [];
+            
+            Object.entries(currentAnswers).forEach(([categoryId, answers]) => {
+                const category = assessmentData.categories[categoryId];
+                
+                Object.entries(answers).forEach(([questionIndex, answerIndex]) => {
+                    const question = category.questions[parseInt(questionIndex)];
+                    const selectedOption = question.options[answerIndex];
+                    
+                    if (selectedOption.risk >= 6) {
+                        let recommendation = '';
+                        let priority = 'medium';
+                        
+                        // Generate specific recommendations based on question and answer
+                        switch (question.id) {
+                            case 'password_reuse':
+                                if (selectedOption.risk >= 8) {
+                                    recommendation = 'Implement a password manager immediately and create unique passwords for all accounts. This is your highest priority security risk.';
+                                    priority = 'high';
+                                } else {
+                                    recommendation = 'Reduce password reuse by using a password manager for better security.';
+                                    priority = 'medium';
+                                }
+                                break;
+                            case 'password_manager':
+                                recommendation = 'Consider upgrading to a enterprise-grade password manager like Bitwarden Business or 1Password for better security features.';
+                                priority = selectedOption.risk >= 8 ? 'high' : 'medium';
+                                break;
+                            case 'two_factor':
+                                recommendation = 'Enable two-factor authentication on all important accounts, preferably using authenticator apps or hardware keys.';
+                                priority = 'high';
+                                break;
+                            case 'profile_visibility':
+                                recommendation = 'Review and tighten your social media privacy settings to limit public access to your personal information.';
+                                priority = 'medium';
+                                break;
+                            case 'personal_info_sharing':
+                                recommendation = 'Audit your social media profiles and remove excessive personal information that could be used for identity theft.';
+                                priority = selectedOption.risk >= 8 ? 'high' : 'medium';
+                                break;
+                            case 'location_services':
+                                recommendation = 'Review app location permissions and disable location sharing for non-essential apps.';
+                                priority = 'medium';
+                                break;
+                            case 'device_locking':
+                                recommendation = 'Enable strong device locking with biometric authentication and reduce auto-lock timeouts.';
+                                priority = 'high';
+                                break;
+                            case 'software_updates':
+                                recommendation = 'Enable automatic updates and prioritize installing security patches promptly.';
+                                priority = 'high';
+                                break;
+                            case 'public_wifi':
+                                recommendation = 'Use a reputable VPN service when connecting to public Wi-Fi and avoid sensitive activities.';
+                                priority = selectedOption.risk >= 8 ? 'high' : 'medium';
+                                break;
+                            case 'app_permissions':
+                                recommendation = 'Regularly audit app permissions and apply the principle of least privilege.';
+                                priority = 'medium';
+                                break;
+                            case 'privacy_policies':
+                                recommendation = 'Start reading at least the key sections of privacy policies, especially for services handling sensitive data.';
+                                priority = 'low';
+                                break;
+                            case 'data_portability':
+                                recommendation = 'Implement regular data backups and conduct quarterly privacy audits.';
+                                priority = 'medium';
+                                break;
+                            case 'email_security':
+                                recommendation = 'Consider switching to a more secure email provider or implementing additional email security measures.';
+                                priority = selectedOption.risk >= 8 ? 'high' : 'medium';
+                                break;
+                            case 'messaging_apps':
+                                recommendation = 'Switch to end-to-end encrypted messaging apps like Signal for sensitive communications.';
+                                priority = selectedOption.risk >= 7 ? 'high' : 'medium';
+                                break;
+                            case 'phishing_awareness':
+                                recommendation = 'Take cybersecurity training to improve your ability to identify and avoid phishing attacks.';
+                                priority = 'high';
+                                break;
+                        }
+                        
+                        if (recommendation) {
+                            recommendations.push({
+                                text: recommendation,
+                                priority: priority,
+                                category: category.name
+                            });
+                        }
+                    }
+                });
+            });
+            
+            // Sort by priority
+            const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+            recommendations.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+            
+            return recommendations.slice(0, 8); // Limit to top 8 recommendations
+        }
+
+        function updateRecommendations(riskData) {
+            const recommendationsDiv = document.getElementById('recommendations');
+            const recommendations = generateRecommendations(riskData);
+            
+            if (recommendations.length === 0) {
+                recommendationsDiv.innerHTML = '<div class="recommendation">🎉 Excellent! Your privacy practices are strong. Keep up the good work!</div>';
+                return;
+            }
+            
+            recommendationsDiv.innerHTML = '';
+            
+            recommendations.forEach(rec => {
+                const recDiv = document.createElement('div');
+                recDiv.className = 'recommendation';
+                
+                recDiv.innerHTML = `
+                    <div class="recommendation-priority priority-${rec.priority}">
+                        ${rec.priority.toUpperCase()} PRIORITY
+                    </div>
+                    <div><strong>${rec.category}:</strong> ${rec.text}</div>
+                `;
+                
+                recommendationsDiv.appendChild(recDiv);
+            });
+        }
+
+        function exportReport(format) {
+            const riskData = calculateRiskScore();
+            const riskLevel = getRiskLevel(riskData.overallScore);
+            const recommendations = generateRecommendations(riskData);
+            
+            if (format === 'pdf') {
+                // Generate PDF report
+                const reportData = {
+                    timestamp: new Date().toISOString(),
+                    overallScore: riskData.overallScore,
+                    riskLevel: riskLevel.level,
+                    categoryScores: riskData.categoryScores,
+                    recommendations: recommendations,
+                    totalQuestions: totalQuestions,
+                    answeredQuestions: answeredQuestions
+                };
+                
+                // Create a formatted report
+                let reportContent = `
+PRIVACY RISK ASSESSMENT REPORT
+Generated: ${new Date().toLocaleDateString()}
+Assessment Completion: ${Math.round((answeredQuestions/totalQuestions)*100)}%
+
+EXECUTIVE SUMMARY
+Overall Risk Score: ${riskData.overallScore}/10
+Risk Level: ${riskLevel.level}
+
+CATEGORY BREAKDOWN
+`;
+                
+                Object.entries(riskData.categoryScores).forEach(([categoryId, data]) => {
+                    reportContent += `${data.name}: ${data.score}/10\n`;
+                });
+                
+                reportContent += `\nPRIORITY RECOMMENDATIONS\n`;
+                recommendations.forEach((rec, index) => {
+                    reportContent += `${index + 1}. [${rec.priority.toUpperCase()}] ${rec.category}: ${rec.text}\n\n`;
+                });
+                
+                reportContent += `\nDISCLAIMER
+This assessment is for informational purposes only and should not be considered as professional security advice. Please consult with cybersecurity professionals for comprehensive security planning.`;
+                
+                // Create and download the report
+                const blob = new Blob([reportContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Privacy_Risk_Assessment_${new Date().toISOString().split('T')[0]}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // Show success message
+                showNotification('📄 Report exported successfully!', 'success');
+                
+            } else if (format === 'json') {
+                const jsonData = {
+                    metadata: {
+                        timestamp: new Date().toISOString(),
+                        version: "1.0",
+                        assessmentType: "Privacy Risk Assessment"
+                    },
+                    results: {
+                        overallScore: riskData.overallScore,
+                        riskLevel: riskLevel.level,
+                        completionRate: Math.round((answeredQuestions/totalQuestions)*100)
+                    },
+                    categoryBreakdown: riskData.categoryScores,
+                    recommendations: recommendations,
+                    rawAnswers: currentAnswers
+                };
+                
+                const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `privacy_assessment_data_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showNotification('📊 Data exported successfully!', 'success');
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : '#17a2b8'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+                z-index: 1000;
+                font-weight: 600;
+                animation: slideInRight 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
+        // Help system
+        document.querySelector('.floating-help').addEventListener('click', function() {
+            const helpContent = `
+PRIVACY RISK ESTIMATOR HELP
+
+This tool evaluates your privacy practices across five key areas:
+
+🔐 PASSWORD SECURITY
+- Measures password strength and management practices
+- Evaluates two-factor authentication usage
+
+📱 SOCIAL MEDIA PRIVACY
+- Assesses profile visibility and information sharing
+- Reviews location sharing practices
+
+💻 DEVICE SECURITY
+- Evaluates device locking and update practices
+- Assesses public Wi-Fi usage habits
+
+📊 DATA SHARING PRACTICES
+- Reviews app permissions management
+- Evaluates privacy policy awareness
+
+💬 COMMUNICATION SECURITY
+- Assesses email and messaging security
+- Evaluates phishing awareness
+
+SCORING SYSTEM
+- 0-2: Low Risk (Excellent practices)
+- 2-5: Medium Risk (Good with room for improvement)
+- 5-8: High Risk (Significant vulnerabilities)
+- 8-10: Critical Risk (Immediate action required)
+
+Your responses are processed locally and never transmitted or stored on our servers.
+            `;
+            
+            alert(helpContent);
+        });
+
+        // Add some advanced CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            
+            .category:nth-child(odd) {
+                animation-delay: 0.1s;
+            }
+            
+            .category:nth-child(even) {
+                animation-delay: 0.2s;
+            }
+            
+            .question {
+                animation: fadeIn 0.5s ease forwards;
+                opacity: 0;
+            }
+            
+            @keyframes fadeIn {
+                to { opacity: 1; }
+            }
+            
+            .option:hover {
+                transform: translateX(5px);
+            }
+            
+            .results-panel {
+                animation: fadeInUp 1s ease-out;
+            }
+            
+            @keyframes fadeInUp {
+                from { transform: translateY(30px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize the assessment when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAssessment();
+            
+            // Add some delay to question animations
+            setTimeout(() => {
+                const questions = document.querySelectorAll('.question');
+                questions.forEach((question, index) => {
+                    setTimeout(() => {
+                        question.style.animationDelay = `${index * 0.1}s`;
+                    }, index * 50);
+                });
+            }, 500);
+        });
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                // Enhanced tab navigation for accessibility
+                const focusableElements = document.querySelectorAll('.option, .btn, .floating-help');
+                const currentIndex = Array.from(focusableElements).indexOf(document.activeElement);
+                
+                if (e.shiftKey) {
+                    // Shift+Tab (previous)
+                    if (currentIndex > 0) {
+                        focusableElements[currentIndex - 1].focus();
+                        e.preventDefault();
+                    }
+                } else {
+                    // Tab (next)
+                    if (currentIndex < focusableElements.length - 1) {
+                        focusableElements[currentIndex + 1].focus();
+                        e.preventDefault();
+                    }
+                }
+            }
+        });
+
+        // Add real-time tips as user progresses
+        let tipsShown = new Set();
+        
+        function showContextualTip(categoryId) {
+            if (tipsShown.has(categoryId)) return;
+            tipsShown.add(categoryId);
+            
+            const tips = {
+                passwords: "💡 Pro tip: A good password manager can generate and store unique passwords for every account!",
+                social_media: "💡 Privacy tip: Regularly audit your social media settings - platforms often change their defaults!",
+                devices: "💡 Security tip: Enable automatic updates to stay protected against the latest threats!",
+                data_sharing: "💡 Data tip: The principle of least privilege applies to apps too - only grant necessary permissions!",
+                communication: "💡 Communication tip: End-to-end encryption ensures only you and your recipient can read messages!"
+            };
+            
+            if (tips[categoryId]) {
+                setTimeout(() => {
+                    showNotification(tips[categoryId], 'info');
+                }, 1000);
+            }
+        }
+
+        // Monitor progress and show contextual tips
+        const originalSelectOption = selectOption;
+        selectOption = function(categoryId, questionIndex, optionIndex) {
+            originalSelectOption(categoryId, questionIndex, optionIndex);
+            
+            // Check if this is the first question answered in this category
+            const categoryAnswers = currentAnswers[categoryId] || {};
+            const answeredInCategory = Object.keys(categoryAnswers).length;
+            
+            if (answeredInCategory === 1) {
+                showContextualTip(categoryId);
+            }
+        };
+    </script>
+</body>
+</html>
