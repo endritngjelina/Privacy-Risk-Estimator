@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Risk Estimator - Advanced Security Assessment Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            --warning-gradient: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
+            --success-gradient: linear-gradient(135deg, #48dbfb 0%, #0abde3 100%);
+            --bg-dark: #1a1a2e;
+            --bg-secondary: #16213e;
+            --text-primary: #eee;
+            --text-secondary: #a0a3bd;
+            --accent: #0f3460;
+            --shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #16213e);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .assessment-panel {
+            background: rgba(22, 33, 62, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .results-panel {
+            background: rgba(22, 33, 62, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .category {
+            margin-bottom: 35px;
+            padding: 25px;
+            background: rgba(15, 52, 96, 0.3);
+            border-radius: var(--border-radius);
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .category:hover {
+            background: rgba(15, 52, 96, 0.5);
+            transform: translateX(5px);
+        }
+
+        .category.password-security { border-left-color: #ff6b6b; }
+        .category.social-media { border-left-color: #4ecdc4; }
+        .category.device-security { border-left-color: #45b7d1; }
+        .category.data-sharing { border-left-color: #f9ca24; }
+        .category.network-security { border-left-color: #6c5ce7; }
+
+        .category h3 {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .question:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .question-text {
+            font-size: 1em;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            backdrop-filter: blur(5px);
+        }
+
+        .option:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.3);
+        }
+
+        .option.high-risk.selected { border-color: #ff6b6b; background: rgba(255, 107, 107, 0.3); }
+        .option.medium-risk.selected { border-color: #feca57; background: rgba(254, 202, 87, 0.3); }
+        .option.low-risk.selected { border-color: #48dbfb; background: rgba(72, 219, 251, 0.3); }
+
+        .risk-score-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .risk-score {
+            font-size: 4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .risk-level {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .progress-ring {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .progress-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            background: conic-gradient(from 0deg, 
+                var(--success-gradient) 0deg,
+                var(--warning-gradient) 120deg,
+                var(--danger-gradient) 240deg,
+                var(--success-gradient) 360deg);
+            padding: 10px;
+        }
+
+        .progress-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .category-breakdown {
+            margin-bottom: 25px;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .category-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-score {
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.9em;
+        }
+
+        .score-high { background: var(--danger-gradient); }
+        .score-medium { background: var(--warning-gradient); color: #333; }
+        .score-low { background: var(--success-gradient); }
+
+        .recommendations {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .recommendations h4 {
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            font-size: 1.2em;
+        }
+
+        .recommendation-item {
+            padding: 10px 0;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            line-height: 1.4;
+        }
+
+        .recommendation-item:last-child {
+            border-bottom: none;
+        }
+
+        .export-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .stat-card {
+            background: rgba(22, 33, 62, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: all 0.8s ease;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-secondary);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .close-modal:hover {
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-panel {
+                position: static;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .options {
+                flex-direction: column;
+            }
+            
+            .export-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation"></div>
+    <div class="floating-particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Privacy Risk Estimator</h1>
+            <p>Advanced security assessment tool to evaluate your digital privacy posture and receive personalized recommendations for enhanced protection.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="questionsAnswered">0</div>
+                <div class="stat-label">Questions Answered</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%; background: var(--primary-gradient);"></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="vulnerabilities">0</div>
+                <div class="stat-label">Vulnerabilities Detected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="recommendations">0</div>
+                <div class="stat-label">Security Recommendations</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="assessment-panel">
+                <div class="category password-security">
+                    <h3>
+                        <span class="category-icon">🔐</span>
+                        Password Security
+                    </h3>
+                    
+                    <div class="question">
+                        <div class="question-text">How do you typically create passwords for new accounts?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="90">Use the same password everywhere</button>
+                            <button class="option medium-risk" data-risk="60">Slight variations of the same password</button>
+                            <button class="option low-risk" data-risk="20">Unique complex passwords for each account</button>
+                            <button class="option low-risk" data-risk="10">Generated passwords with password manager</button>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <div class="question-text">Do you use two-factor authentication (2FA)?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="80">Never heard of it</button>
+                            <button class="option medium-risk" data-risk="50">Only on important accounts</button>
+                            <button class="option low-risk" data-risk="15">On most accounts</button>
+                            <button class="option low-risk" data-risk="5">Hardware keys for critical accounts</button>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <div class="question-text">How often do you update your passwords?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="85">Never, unless forced</button>
+                            <button class="option medium-risk" data-risk="55">Only when I remember</button>
+                            <button class="option low-risk" data-risk="25">Every 6-12 months</button>
+                            <button class="option low-risk" data-risk="15">Immediately when there's a breach</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category social-media">
+                    <h3>
+                        <span class="category-icon">📱</span>
+                        Social Media & Online Presence
+                    </h3>
+
+                    <div class="question">
+                        <div class="question-text">What's your typical social media privacy setting?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="75">Everything public</button>
+                            <button class="option medium-risk" data-risk="45">Mix of public and private</button>
+                            <button class="option low-risk" data-risk="20">Mostly private</button>
+                            <button class="option low-risk" data-risk="10">Very restrictive, friends only</button>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <div class="question-text">How much personal information do you share online?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="80">Full details (location, workplace, family)</button>
+                            <button class="option medium-risk" data-risk="50">Some personal details</button>
+                            <button class="option low-risk" data-risk="25">Basic information only</button>
+                            <button class="option low-risk" data-risk="10">Minimal to no personal details</button>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <div class="question-text">Do you review and clean up your digital footprint?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="70">Never thought about it</button>
+                            <button class="option medium-risk" data-risk="40">Occasionally</button>
+                            <button class="option low-risk" data-risk="20">Regular cleanup</button>
+                            <button class="option low-risk" data-risk="10">Automated privacy tools</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category device-security">
+                    <h3>
+                        <span class="category-icon">💻</span>
+                        Device Security
+                    </h3>
+
+                    <div class="question">
+                        <div class="question-text">How do you secure your devices (phone, laptop)?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="85">No lock screen or password</button>
+                            <button class="option medium-risk" data-risk="40">Simple PIN or pattern</button>
+                            <button class="option low-risk" data-risk="20">Strong password/biometric</button>
+                            <button class="option low-risk" data-risk="10">Multi-layer security + encryption</button>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <div class="question-text">How often do you update your devices and apps?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="75">Rarely, when forced</button>
+                            <button class="option medium-risk" data-risk="45">When I remember</button>
+                            <button class="option low-risk" data-risk="20">Regular updates</button>
+                            <button class="option low-risk" data-risk="5">Automatic updates enabled</button>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <div class="question-text">What antivirus/security software do you use?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="80">None</button>
+                            <button class="option medium-risk" data-risk="35">Basic built-in protection</button>
+                            <button class="option low-risk" data-risk="15">Reputable third-party solution</button>
+                            <button class="option low-risk" data-risk="5">Enterprise-grade security suite</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category data-sharing">
+                    <h3>
+                        <span class="category-icon">🔗</span>
+                        Data Sharing & Apps
+                    </h3>
+
+                    <div class="question">
+                        <div class="question-text">How carefully do you read app permissions?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="85">Never read them, accept all</button>
+                            <button class="option medium-risk" data-risk="55">Quick glance</button>
+                            <button class="option low-risk" data-risk="25">Careful review</button>
+                            <button class="option low-risk" data-risk="10">Detailed analysis, deny unnecessary permissions</button>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <div class="question-text">How do you handle data collection by websites and apps?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="75">Accept all cookies and tracking</button>
+                            <button class="option medium-risk" data-risk="50">Accept most, decline some</button>
+                            <button class="option low-risk" data-risk="25">Selective acceptance</button>
+                            <button class="option low-risk" data-risk="10">Block tracking, use privacy tools</button>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <div class="question-text">How often do you review and revoke app permissions?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="70">Never</button>
+                            <button class="option medium-risk" data-risk="45">Rarely</button>
+                            <button class="option low-risk" data-risk="20">Periodically</button>
+                            <button class="option low-risk" data-risk="5">Regular audits</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category network-security">
+                    <h3>
+                        <span class="category-icon">🌐</span>
+                        Network & Connection Security
+                    </h3>
+
+                    <div class="question">
+                        <div class="question-text">How do you connect to public Wi-Fi networks?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="80">Connect to any open network</button>
+                            <button class="option medium-risk" data-risk="50">Connect but avoid sensitive activities</button>
+                            <button class="option low-risk" data-risk="20">Use VPN on public networks</button>
+                            <button class="option low-risk" data-risk="10">Never use public Wi-Fi</button>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <div class="question-text">Do you use a VPN for online activities?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="65">Never use VPN</button>
+                            <button class="option medium-risk" data-risk="35">Only for specific activities</button>
+                            <button class="option low-risk" data-risk="15">Regular VPN usage</button>
+                            <button class="option low-risk" data-risk="5">Always-on VPN</button>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <div class="question-text">How secure is your home network?</div>
+                        <div class="options">
+                            <button class="option high-risk" data-risk="85">Default router settings</button>
+                            <button class="option medium-risk" data-risk="45">Changed default password</button>
+                            <button class="option low-risk" data-risk="20">WPA3, guest network</button>
+                            <button class="option low-risk" data-risk="10">Enterprise-grade security</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-panel">
+                <div class="risk-score-container">
+                    <div class="progress-ring">
+                        <div class="progress-circle">
+                            <div class="progress-inner">
+                                <div>
+                                    <div class="risk-score" id="riskScore">0</div>
+                                    <div class="risk-level" id="riskLevel">Unknown</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category-breakdown">
+                    <h4>Risk Breakdown</h4>
+                    <div class="category-item">
+                        <span>Password Security</span>
+                        <span class="category-score score-low" id="passwordScore">Low</span>
+                    </div>
+                    <div class="category-item">
+                        <span>Social Media</span>
+                        <span class="category-score score-low" id="socialScore">Low</span>
+                    </div>
+                    <div class="category-item">
+                        <span>Device Security</span>
+                        <span class="category-score score-low" id="deviceScore">Low</span>
+                    </div>
+                    <div class="category-item">
+                        <span>Data Sharing</span>
+                        <span class="category-score score-low" id="dataScore">Low</span>
+                    </div>
+                    <div class="category-item">
+                        <span>Network Security</span>
+                        <span class="category-score score-low" id="networkScore">Low</span>
+                    </div>
+                </div>
+
+                <div class="recommendations" id="recommendations">
+                    <h4>Priority Recommendations</h4>
+                    <div id="recommendationsList">
+                        <div class="recommendation-item">Complete the assessment to receive personalized security recommendations.</div>
+                    </div>
+                </div>
+
+                <div class="export-controls">
+                    <button class="btn" onclick="generateReport()">
+                        📊 Generate Report
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetAssessment()">
+                        🔄 Reset
+                    </button>
+                    <button class="btn btn-secondary" onclick="shareResults()">
+                        📤 Share
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="reportModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h3>Privacy Risk Assessment Report</h3>
+            <div id="reportContent"></div>
+            <div style="margin-top: 20px;">
+                <button class="btn" onclick="downloadReport()">Download PDF</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class PrivacyRiskEstimator {
+            constructor() {
+                this.answers = {};
+                this.totalQuestions = 15;
+                this.categories = {
+                    password: { name: 'Password Security', scores: [], weight: 1.2 },
+                    social: { name: 'Social Media', scores: [], weight: 0.9 },
+                    device: { name: 'Device Security', scores: [], weight: 1.1 },
+                    data: { name: 'Data Sharing', scores: [], weight: 1.0 },
+                    network: { name: 'Network Security', scores: [], weight: 1.0 }
+                };
+                this.init();
+                this.createFloatingParticles();
+            }
+
+            init() {
+                this.bindEvents();
+                this.updateStats();
+            }
+
+            createFloatingParticles() {
+                const container = document.querySelector('.floating-particles');
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 20 + 's';
+                    particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                    container.appendChild(particle);
+                }
+            }
+
+            bindEvents() {
+                document.querySelectorAll('.option').forEach(option => {
+                    option.addEventListener('click', (e) => this.selectOption(e.target));
+                });
+            }
+
+            selectOption(option) {
+                const question = option.closest('.question');
+                const category = option.closest('.category');
+                const categoryClass = Array.from(category.classList).find(cls => 
+                    ['password-security', 'social-media', 'device-security', 'data-sharing', 'network-security'].includes(cls)
+                );
+                
+                // Remove previous selection
+                question.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+                
+                // Add current selection
+                option.classList.add('selected');
+                
+                // Store answer
+                const questionIndex = Array.from(question.parentElement.querySelectorAll('.question')).indexOf(question);
+                const categoryKey = this.getCategoryKey(categoryClass);
+                const riskScore = parseInt(option.dataset.risk);
+                
+                if (!this.answers[categoryKey]) this.answers[categoryKey] = {};
+                this.answers[categoryKey][questionIndex] = riskScore;
+                
+                // Update categories scores
+                this.updateCategoryScores();
+                this.updateStats();
+                this.updateRecommendations();
+                
+                // Add visual feedback
+                option.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    option.style.transform = 'scale(1)';
+                }, 150);
+            }
+
+            getCategoryKey(categoryClass) {
+                const mapping = {
+                    'password-security': 'password',
+                    'social-media': 'social',
+                    'device-security': 'device',
+                    'data-sharing': 'data',
+                    'network-security': 'network'
+                };
+                return mapping[categoryClass];
+            }
+
+            updateCategoryScores() {
+                Object.keys(this.categories).forEach(key => {
+                    if (this.answers[key]) {
+                        const scores = Object.values(this.answers[key]);
+                        this.categories[key].scores = scores;
+                    }
+                });
+            }
+
+            calculateOverallRisk() {
+                let totalWeightedScore = 0;
+                let totalWeight = 0;
+                
+                Object.keys(this.categories).forEach(key => {
+                    const category = this.categories[key];
+                    if (category.scores.length > 0) {
+                        const avgScore = category.scores.reduce((a, b) => a + b, 0) / category.scores.length;
+                        totalWeightedScore += avgScore * category.weight;
+                        totalWeight += category.weight;
+                    }
+                });
+                
+                return totalWeight > 0 ? Math.round(totalWeightedScore / totalWeight) : 0;
+            }
+
+            getRiskLevel(score) {
+                if (score >= 70) return { level: 'CRITICAL', color: '#ff6b6b', class: 'score-high' };
+                if (score >= 50) return { level: 'HIGH', color: '#feca57', class: 'score-medium' };
+                if (score >= 30) return { level: 'MEDIUM', color: '#48dbfb', class: 'score-low' };
+                return { level: 'LOW', color: '#00d2d3', class: 'score-low' };
+            }
+
+            updateStats() {
+                const answeredQuestions = Object.values(this.answers).reduce((total, category) => 
+                    total + Object.keys(category).length, 0
+                );
+                
+                const overallRisk = this.calculateOverallRisk();
+                const riskInfo = this.getRiskLevel(overallRisk);
+                const vulnerabilities = this.countVulnerabilities();
+                const recommendationCount = this.getRecommendationCount();
+                
+                // Update progress
+                const progress = (answeredQuestions / this.totalQuestions) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+                
+                // Update stats cards
+                document.getElementById('questionsAnswered').textContent = answeredQuestions;
+                document.getElementById('vulnerabilities').textContent = vulnerabilities;
+                document.getElementById('recommendations').textContent = recommendationCount;
+                
+                // Update risk score display
+                document.getElementById('riskScore').textContent = overallRisk;
+                document.getElementById('riskScore').style.color = riskInfo.color;
+                document.getElementById('riskLevel').textContent = riskInfo.level;
+                document.getElementById('riskLevel').style.color = riskInfo.color;
+                
+                // Update category scores
+                this.updateCategoryDisplays();
+            }
+
+            updateCategoryDisplays() {
+                const categories = ['password', 'social', 'device', 'data', 'network'];
+                const elements = ['passwordScore', 'socialScore', 'deviceScore', 'dataScore', 'networkScore'];
+                
+                categories.forEach((category, index) => {
+                    const element = document.getElementById(elements[index]);
+                    const scores = this.categories[category].scores;
+                    
+                    if (scores.length > 0) {
+                        const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+                        const riskInfo = this.getRiskLevel(avgScore);
+                        
+                        element.textContent = riskInfo.level;
+                        element.className = `category-score ${riskInfo.class}`;
+                    }
+                });
+            }
+
+            countVulnerabilities() {
+                let count = 0;
+                Object.values(this.answers).forEach(category => {
+                    Object.values(category).forEach(score => {
+                        if (score >= 60) count++;
+                    });
+                });
+                return count;
+            }
+
+            getRecommendationCount() {
+                const vulnerabilities = this.countVulnerabilities();
+                return Math.min(vulnerabilities + 2, 8); // Base recommendations plus vulnerabilities
+            }
+
+            updateRecommendations() {
+                const recommendations = this.generateRecommendations();
+                const container = document.getElementById('recommendationsList');
+                
+                if (recommendations.length === 0) {
+                    container.innerHTML = '<div class="recommendation-item">Complete more questions to receive personalized recommendations.</div>';
+                    return;
+                }
+                
+                container.innerHTML = recommendations.map(rec => 
+                    `<div class="recommendation-item">${rec}</div>`
+                ).join('');
+            }
+
+            generateRecommendations() {
+                const recs = [];
+                const answeredCategories = Object.keys(this.answers);
+                
+                answeredCategories.forEach(category => {
+                    const scores = Object.values(this.answers[category]);
+                    const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+                    
+                    if (avgScore >= 60) {
+                        recs.push(...this.getCategoryRecommendations(category, avgScore));
+                    }
+                });
+                
+                // Add general recommendations
+                if (recs.length === 0 && answeredCategories.length > 0) {
+                    recs.push(
+                        "Enable automatic software updates on all devices",
+                        "Review and strengthen your password security",
+                        "Consider using a VPN for enhanced privacy"
+                    );
+                }
+                
+                return recs.slice(0, 5); // Limit to top 5 recommendations
+            }
+
+            getCategoryRecommendations(category, score) {
+                const recommendations = {
+                    password: [
+                        "Use a reputable password manager like Bitwarden or 1Password",
+                        "Enable two-factor authentication on all important accounts",
+                        "Use unique, complex passwords for each account",
+                        "Consider hardware security keys for critical accounts"
+                    ],
+                    social: [
+                        "Review and tighten your social media privacy settings",
+                        "Limit personal information shared publicly online",
+                        "Regularly audit your digital footprint",
+                        "Be cautious about location sharing features"
+                    ],
+                    device: [
+                        "Enable device encryption on all devices",
+                        "Use strong unlock methods (biometrics + PIN)",
+                        "Install security updates promptly",
+                        "Use reputable antivirus software"
+                    ],
+                    data: [
+                        "Review and limit app permissions regularly",
+                        "Use privacy-focused browsers and search engines",
+                        "Decline unnecessary data collection",
+                        "Use ad blockers and tracking protection"
+                    ],
+                    network: [
+                        "Use a VPN, especially on public networks",
+                        "Secure your home router with WPA3 encryption",
+                        "Avoid connecting to unsecured public Wi-Fi",
+                        "Consider using DNS filtering services"
+                    ]
+                };
+                
+                return recommendations[category] || [];
+            }
+        }
+
+        // Global functions for UI interactions
+        function generateReport() {
+            const estimator = window.estimatorInstance;
+            const overallRisk = estimator.calculateOverallRisk();
+            const riskInfo = estimator.getRiskLevel(overallRisk);
+            const answeredQuestions = Object.values(estimator.answers).reduce((total, category) => 
+                total + Object.keys(category).length, 0
+            );
+            
+            const reportContent = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: ${riskInfo.color};">Risk Level: ${riskInfo.level}</h2>
+                    <div style="font-size: 2em; font-weight: bold; color: ${riskInfo.color};">${overallRisk}/100</div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h4>Assessment Summary</h4>
+                    <p>Questions Answered: ${answeredQuestions}/${estimator.totalQuestions}</p>
+                    <p>Vulnerabilities Detected: ${estimator.countVulnerabilities()}</p>
+                    <p>Generated on: ${new Date().toLocaleDateString()}</p>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h4>Category Breakdown</h4>
+                    ${Object.keys(estimator.categories).map(key => {
+                        const category = estimator.categories[key];
+                        if (category.scores.length > 0) {
+                            const avgScore = category.scores.reduce((a, b) => a + b, 0) / category.scores.length;
+                            const catRisk = estimator.getRiskLevel(avgScore);
+                            return `<p>${category.name}: <span style="color: ${catRisk.color};">${catRisk.level}</span></p>`;
+                        }
+                        return `<p>${category.name}: Not assessed</p>`;
+                    }).join('')}
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h4>Key Recommendations</h4>
+                    ${estimator.generateRecommendations().map(rec => `<p>• ${rec}</p>`).join('')}
+                </div>
+            `;
+            
+            document.getElementById('reportContent').innerHTML = reportContent;
+            document.getElementById('reportModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('reportModal').style.display = 'none';
+        }
+
+        function downloadReport() {
+            // Simulate PDF download
+            const element = document.createElement('a');
+            const content = document.getElementById('reportContent').textContent;
+            const file = new Blob([content], {type: 'text/plain'});
+            element.href = URL.createObjectURL(file);
+            element.download = `privacy-risk-report-${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        function resetAssessment() {
+            if (confirm('Are you sure you want to reset the assessment? All progress will be lost.')) {
+                window.estimatorInstance = new PrivacyRiskEstimator();
+                document.querySelectorAll('.option.selected').forEach(opt => opt.classList.remove('selected'));
+                document.getElementById('recommendationsList').innerHTML = 
+                    '<div class="recommendation-item">Complete the assessment to receive personalized security recommendations.</div>';
+            }
+        }
+
+        function shareResults() {
+            const estimator = window.estimatorInstance;
+            const overallRisk = estimator.calculateOverallRisk();
+            const riskInfo = estimator.getRiskLevel(overallRisk);
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Privacy Risk Assessment Results',
+                    text: `I just completed a privacy risk assessment. My risk level is ${riskInfo.level} (${overallRisk}/100). Check your privacy risk too!`,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback for browsers without Web Share API
+                const text = `I just completed a privacy risk assessment. My risk level is ${riskInfo.level} (${overallRisk}/100). Check your privacy risk too! ${window.location.href}`;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('Results copied to clipboard!');
+                });
+            }
+        }
+
+        // Initialize the application
+        window.addEventListener('DOMContentLoaded', () => {
+            window.estimatorInstance = new PrivacyRiskEstimator();
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('reportModal');
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
